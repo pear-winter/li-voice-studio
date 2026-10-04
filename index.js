@@ -1,6 +1,6 @@
 function initLiVoice() {
 'use strict';
-const W=window,D=W.document,NS='__liliMiniVoiceV1',STORE='lili-minimax-voice-v1',VERSION='1.6.1';
+const W=window,D=W.document,NS='__liliMiniVoiceV1',STORE='lili-minimax-voice-v1',VERSION='1.6.2';
 W[NS]?.destroy();
 const listeners=[],timers=new Set(),tasks=new Set();
 let dead=false,pending=null,generation=0,objectUrl='',lastSelection='',lastHighlight=null,lastReport='还没有检查连接。',menu=null;
@@ -137,7 +137,8 @@ function positionSelectionButton(doc){
  const bw=selectionButton.offsetWidth||150,bh=selectionButton.offsetHeight||44;
  selectionButton.style.left=Math.max(left+8,Math.min(x,left+width-bw-8))+'px';selectionButton.style.top=Math.max(top+8,Math.min(y,top+height-bh-12))+'px';
 }
-function selected(doc,floor){if(dialog.open){hideSelectionButton();return;}if(!doc){const active=activeSelectionDocument();doc=active.doc;floor=active.floor;}const t=getSelectionText(doc,floor);if(capturedSelection&&!t)return;lastSelection=t;if(!t){hideSelectionButton();return;}selectionButton.hidden=false;if(selectionButton.hasAttribute('popover')&&!selectionButton.matches(':popover-open')){try{selectionButton.showPopover();}catch{}}positionSelectionButton(doc);}
+function excerptVoiceVisible(){return [...D.querySelectorAll('#be-float-bar .lv-be-button, #be-hl-bar .lv-be-button')].some(button=>{const bar=button.closest('#be-float-bar,#be-hl-bar');if(!bar?.classList.contains('show'))return false;for(let el=button;el;el=el.parentElement){const css=W.getComputedStyle(el);if(el.hidden||css.display==='none'||css.visibility==='hidden'||Number(css.opacity)===0)return false;}const r=button.getBoundingClientRect();return r.width>0&&r.height>0&&r.bottom>0&&r.right>0&&r.top<W.innerHeight&&r.left<W.innerWidth;});}
+function selected(doc,floor){if(dialog.open){hideSelectionButton();return;}if(!doc){const active=activeSelectionDocument();doc=active.doc;floor=active.floor;}const t=getSelectionText(doc,floor);if(capturedSelection&&!t)return;lastSelection=t;if(!t||excerptVoiceVisible()){hideSelectionButton();return;}selectionButton.hidden=false;if(selectionButton.hasAttribute('popover')&&!selectionButton.matches(':popover-open')){try{selectionButton.showPopover();}catch{}}positionSelectionButton(doc);}
 
 const frameEntries=new Map();
 function scanFrames(root=D,floor=null){
@@ -164,7 +165,7 @@ on(selectionButton,'touchstart',()=>{capturedSelection=getSelectionText()||lastS
 on(selectionButton,'click',()=>{const text=capturedSelection||lastSelection;capturedSelection='';chosen(text);});
 function makeBridge(bar,isHighlight){const b=node('button',null,'lv-be-button'+(!isHighlight?' be-fbtn':''));b.type='button';b.innerHTML=ICON+'<span>配音</span>';b.title='用 MiniMax 读这段话';let captured='';on(b,'pointerdown',e=>{captured=isHighlight?highlighted():(getSelectionText()||lastSelection);e.preventDefault();e.stopPropagation();});on(b,'click',e=>{e.preventDefault();e.stopPropagation();const t=captured||(isHighlight?highlighted():(getSelectionText()||lastSelection));captured='';chosen(t);bar.closest('#be-hl-bar,#be-float-bar')?.classList.remove('show');});bar.append(b);}
 function ensure(){mountMenu();scanFrames();for(const [selector,hl] of [['#be-float-bar',false],['#be-hl-bar .be-hl-row1',true]]){const bar=D.querySelector(selector);if(bar&&!bar.querySelector('.lv-be-button'))makeBridge(bar,hl);}}
-let queued=false;const observer=new W.MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;if(!dead)ensure();});});observer.observe(D.body,{childList:true,subtree:true});ensure();
+let queued=false;const observer=new W.MutationObserver(records=>{if(!records.some(r=>r.type==='childList'||r.target.closest?.('#be-float-bar,#be-hl-bar')))return;if(queued)return;queued=true;queueMicrotask(()=>{queued=false;if(!dead){ensure();selected();}});});observer.observe(D.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','hidden']});ensure();
 function destroy(){if(dead)return;dead=true;cancelTranslation();for(const entry of frameEntries.values())entry.dispose();frameEntries.clear();stop();clearAudio();stopHistory();historyDb?.close();apiDb?.close();for(const url of downloadUrls)W.URL.revokeObjectURL(url);observer.disconnect();for(const id of timers)clearTimeout(id);for(const t of tasks)t.abort();for(const off of listeners)off();D.querySelectorAll('.lv-be-button').forEach(x=>x.remove());customStyle.remove();dialog.remove();menu?.remove();selectionButton.remove();if(W[NS]?.destroy===destroy)delete W[NS];}
 function watchSelection(){if(dead)return;if(!D.hidden)selected();later(watchSelection,300);}watchSelection();
 on(D,'visibilitychange',()=>{if(!D.hidden){ensure();selected();}});
