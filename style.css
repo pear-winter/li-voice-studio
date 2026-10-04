@@ -16,3 +16,5 @@
 #lv-selection{inset:auto;right:auto;bottom:auto;margin:0;max-width:calc(100vw - 16px);min-height:40px;white-space:nowrap;touch-action:manipulation;user-select:none;-webkit-user-select:none;pointer-events:auto!important;opacity:1!important;visibility:visible!important;color:var(--SmartThemeBodyColor,CanvasText);box-shadow:0 3px 14px #0003}
 #lv-selection:not([hidden]){display:block!important}
 #lv-selection::backdrop{background:transparent;pointer-events:none}
+
+#lv-dialog [data-id=customCss]{font-family:monospace;min-height:180px;tab-size:2}
