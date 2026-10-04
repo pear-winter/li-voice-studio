@@ -18,3 +18,5 @@
 #lv-selection::backdrop{background:transparent;pointer-events:none}
 
 #lv-dialog [data-id=customCss]{font-family:monospace;min-height:180px;tab-size:2}
+
+#lv-dialog .lv-add-voice{display:block;width:100%;position:sticky;top:0;z-index:2;background:var(--lv-bg);margin:12px 0}#lv-dialog .lv-voice-entry{margin-top:8px;padding:10px;border:1px solid var(--lv-line);border-radius:9px}
