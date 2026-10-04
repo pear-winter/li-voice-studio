@@ -30,7 +30,10 @@ const root = path.resolve(__dirname, '..');
   assert.equal(await page.locator('.lv-inline-audio').count(), 1);
   assert.equal(await page.locator('.lv-inline-audio').evaluate(e => e.previousSibling.textContent), '中间。你好梨梨。');
   assert.equal(await page.locator('.lv-inline-audio button').count(), 3);
+  await page.evaluate(() => { window.playReads=0;window.scanCalls=0;window.oldGetAll=IDBObjectStore.prototype.getAll;IDBObjectStore.prototype.getAll=function(...args){window.playReads++;return window.oldGetAll.apply(this,args);};window.oldQueryAll=document.querySelectorAll;document.querySelectorAll=function(selector){if(selector==='iframe')window.scanCalls++;return window.oldQueryAll.call(this,selector);}; });
   await page.locator('.lv-inline-audio button').first().click(); await page.waitForFunction(() => document.querySelector('.lv-inline-audio button').getAttribute('aria-pressed') === 'true');
+  const playbackCost=await page.evaluate(async()=>{const audio=[...document.querySelectorAll('body > audio')].find(a=>!a.paused);window.scanCalls=0;for(let i=0;i<20;i++)audio.dispatchEvent(new Event('timeupdate'));await new Promise(r=>setTimeout(r,200));const result={reads:window.playReads,scans:window.scanCalls};IDBObjectStore.prototype.getAll=window.oldGetAll;document.querySelectorAll=window.oldQueryAll;return result;});assert.equal(playbackCost.reads,0,'playback must not scan all recording metadata');assert.equal(playbackCost.scans,0,'progress updates must not rescan the page');
+
   await page.locator('.lv-inline-audio button').first().click(); assert.equal(await page.locator('.lv-inline-audio button').first().getAttribute('aria-pressed'), 'false');
   await page.locator('#lv-menu').click(); await generate(); await $('close').click();
   await page.waitForFunction(() => document.querySelectorAll('.lv-inline-audio button').length === 4);
