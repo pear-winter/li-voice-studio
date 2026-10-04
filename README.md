@@ -46,3 +46,21 @@ MiniMax 和副 API 均可保存多套命名接口（包含 Key、地址和模型
 **1.5.0**：精简界面说明，折叠录音列表、历史搜索、整层选字、同源 iframe 选字、独立副 API 翻译。
 
 Chromium 模拟接口验证：旧录音保留、播放、下载、删除、搜索、独立选字、翻译预览与过期结果取消。未使用真实账户验证 MiniMax 或翻译服务。
+
+## 安卓版与同步
+
+[下载安卓 APK 1.0.0](https://github.com/pear-winter/li-voice-studio/raw/refs/heads/main/downloads/li-voice-1.0.0.apk)
+
+安卓应用 **♪梨梨配音室 1.0.0**，包名 `net.pearvoice.app`，支持 Android 8.0 及以上，需要较新的 Android System WebView。应用独立运行，无需酒馆或任何插件。配音与翻译使用联网 API，录音、歌曲、歌词、音色和接口保存在应用本地；已有音频可离线播放。卸载应用会删除本地数据。
+
+**歌曲**：导入音频，展开条目后导入或更换 LRC。歌词随播放进度高亮，点击歌词跳转；支持 UTF-8 / GB18030、多个时间标签与 offset。可按歌名或歌词搜索、下载歌曲和歌词、确认删除。单首音频最大 50 MB。
+
+**配置 → 导入与导出**：APK 与插件使用同一种 `.livoice.json` 文件，包含录音、歌曲及歌词、音色、已保存的 MiniMax / 副 API 接口。导入不会删除其他内容；重复 ID 默认保留本地版本，选择「使用导入版本」可更新已有音色、接口与歌词。外观与当前页面偏好仍使用本机设置。未导出 Key 时，导入不会清掉已有 Key。若要把 Key 一起迁移，导出前勾选「包含 API Key」；该文件包含明文 Key，请自行保管。单次同步音频总量最大 100 MB。
+
+**1.8.0 插件**：新增歌曲与歌词存储、跨端导入导出；旧录音数据库自动升级并保留。酒馆助手脚本不随此版本更新。
+
+### 构建 APK
+
+安装 Android SDK Platform 35 / Build Tools 35.0.0、Java 17 与 Eclipse ECJ 3.38.0。设置 `ANDROID_SDK_ROOT`、`ECJ_JAR` 和 `VOICE_SIGNING_DIR` 后运行 `python3 android/build-apk.py`。签名目录包含 `release.p12` 与 `password.txt`，别名 `pear`；签名资料不得放入公开仓库。构建会从插件复制共享逻辑及样式到应用，输出 `android/build/li-voice-1.0.0.apk`。
+
+验证：浏览器自动化覆盖数据库升级、跨端音频逐字节对比、合并去重、Key 选择性导出、非法文件拒绝、歌词定位及持久化；安卓包通过编译和 APK 签名校验。未使用真实 MiniMax 账户计费合成，尚未在实体安卓设备上验收。

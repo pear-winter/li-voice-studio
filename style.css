@@ -20,3 +20,4 @@
 #lv-dialog [data-id=customCss]{font-family:monospace;min-height:180px;tab-size:2}
 
 #lv-dialog .lv-add-voice{display:block;width:100%;position:sticky;top:0;z-index:2;background:var(--lv-bg);margin:12px 0}#lv-dialog .lv-voice-entry{margin-top:8px;padding:10px;border:1px solid var(--lv-line);border-radius:9px}
+#lv-dialog .lv-check{display:flex;gap:8px;align-items:center}#lv-dialog .lv-check input{width:18px;min-height:18px;margin:0}#lv-dialog .lv-lyrics{position:relative;max-height:220px;overflow:auto;margin-top:16px;padding:14px;border:1px solid var(--lv-line);border-radius:12px;scroll-behavior:smooth}#lv-dialog .lv-lyrics button{display:block;width:100%;border:0;opacity:.6;padding:8px;min-height:40px}#lv-dialog .lv-lyrics .lv-current-lyric{opacity:1;color:var(--lv-accent);font-weight:bold;background:color-mix(in srgb,var(--lv-accent) 10%,transparent)}
