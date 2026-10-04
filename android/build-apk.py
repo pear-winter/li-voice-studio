@@ -18,7 +18,7 @@ run(bt/'d8','--lib',jar,'--min-api','26','--output',b/'dex',*list((b/'classes').
 with zipfile.ZipFile(b/'base.apk','a',compression=zipfile.ZIP_STORED) as z:
  for dex in (b/'dex').glob('*.dex'):z.write(dex,dex.name)
 run(bt/'zipalign','-p','-f','4',b/'base.apk',b/'aligned.apk')
-run(bt/'apksigner','sign','--ks',keys/'release.p12','--ks-key-alias','pear','--ks-pass','file:'+str(keys/'password.txt'),'--out',b/'li-voice-1.1.0.apk',b/'aligned.apk')
-run(bt/'apksigner','verify','--verbose',b/'li-voice-1.1.0.apk')
-print('APK:',b/'li-voice-1.1.0.apk')
+run(bt/'apksigner','sign','--ks',keys/'release.p12','--ks-key-alias','pear','--ks-pass','file:'+str(keys/'password.txt'),'--out',b/'li-voice-1.2.0.apk',b/'aligned.apk')
+run(bt/'apksigner','verify','--verbose',b/'li-voice-1.2.0.apk')
+print('APK:',b/'li-voice-1.2.0.apk')
 

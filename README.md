@@ -49,9 +49,9 @@ Chromium 模拟接口验证：旧录音保留、播放、下载、删除、搜�
 
 ## 安卓版与同步
 
-[下载安卓 APK 1.1.0](https://github.com/pear-winter/li-voice-studio/raw/refs/heads/main/downloads/li-voice-1.1.0.apk)
+[下载安卓 APK 1.2.0](https://github.com/pear-winter/li-voice-studio/raw/refs/heads/main/downloads/li-voice-1.2.0.apk)
 
-安卓应用 **♪梨梨配音室 1.1.0**，包名 `net.pearvoice.app`，支持 Android 8.0 及以上，需要较新的 Android System WebView。应用独立运行，无需酒馆或任何插件。配音与翻译使用联网 API，录音、歌曲、歌词、音色和接口保存在应用本地；已有音频可离线播放。卸载应用会删除本地数据。
+安卓应用 **♪梨梨配音室 1.2.0**，包名 `net.pearvoice.app`，支持 Android 8.0 及以上，需要较新的 Android System WebView。应用独立运行，无需酒馆或任何插件。配音与翻译使用联网 API，录音、歌曲、歌词、音色和接口保存在应用本地；已有音频可离线播放。卸载应用会删除本地数据。
 
 **歌曲**：导入音频，展开条目后导入或更换 LRC。歌词随播放进度高亮，点击歌词跳转；支持 UTF-8 / GB18030、多个时间标签与 offset。可按歌名或歌词搜索、下载歌曲和歌词、确认删除。单首音频最大 50 MB。
 
@@ -61,7 +61,7 @@ Chromium 模拟接口验证：旧录音保留、播放、下载、删除、搜�
 
 ### 构建 APK
 
-安装 Android SDK Platform 35 / Build Tools 35.0.0、Java 17 与 Eclipse ECJ 3.38.0。设置 `ANDROID_SDK_ROOT`、`ECJ_JAR` 和 `VOICE_SIGNING_DIR` 后运行 `python3 android/build-apk.py`。签名目录包含 `release.p12` 与 `password.txt`，别名 `pear`；签名资料不得放入公开仓库。构建会从插件复制共享逻辑及样式到应用，输出 `android/build/li-voice-1.1.0.apk`。
+安装 Android SDK Platform 35 / Build Tools 35.0.0、Java 17 与 Eclipse ECJ 3.38.0。设置 `ANDROID_SDK_ROOT`、`ECJ_JAR` 和 `VOICE_SIGNING_DIR` 后运行 `python3 android/build-apk.py`。签名目录包含 `release.p12` 与 `password.txt`，别名 `pear`；签名资料不得放入公开仓库。构建会从插件复制共享逻辑及样式到应用，输出 `android/build/li-voice-1.2.0.apk`。
 
 验证：浏览器自动化覆盖数据库升级、跨端音频逐字节对比、合并去重、Key 选择性导出、非法文件拒绝、歌词定位及持久化；安卓包通过编译和 APK 签名校验。未使用真实 MiniMax 账户计费合成，尚未在实体安卓设备上验收。
 
@@ -83,3 +83,11 @@ API 依据：
 - https://platform.minimax.cn/docs/guides/pricing-paygo
 
 模拟接口验证覆盖 multipart 音频上传、辅助样本、64 位文件 ID 保真、克隆链接与生成 hex 试听、播放不重复请求、本地音色持久化、无效音频前置拒绝、取消、账户隔离及零余额。未使用真实账号登录或计费创建音色，也未在实体安卓手机上验证官网登录流程。
+
+### 插件 1.9.0 / 安卓 1.2.0
+
+配音页新增语气、0.5–2 倍语速，按音色保存在本地并随同步文件导出。自动语气不发送 emotion 参数。光标处可插入轻笑、叹气、换气等语气词（需 speech-2.8），也可插入 0.01–99.99 秒停顿（最多两位小数）。停顿需位于可朗读文字之间，不可连续或放在开头、末尾。生动、低语语气需 speech-2.6。余额、充值链接与克隆工作台仍仅在安卓应用中提供。
+
+黑白线框 CSS 修复按钮点击、焦点、选中及禁用状态的前景与背景配对，避免白底白字。请替换配置中已保存的旧 CSS。
+
+依据：https://platform.minimax.cn/docs/api-reference/speech-t2a-http

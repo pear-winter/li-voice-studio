@@ -1,0 +1,200 @@
+#lv-dialog, #lv-selection {
+  --SmartThemeBodyColor: #202020;
+  --SmartThemeBlurTintColor: #ffffff;
+  --SmartThemeChatTintColor: #ffffff;
+  --SmartThemeBorderColor: #a3a3a3;
+  --SmartThemeQuoteColor: #242424;
+  --lv-bg: #ffffff;
+  --lv-line: #a3a3a3;
+  --lv-accent: #242424;
+  --lv-soft: #f5f5f5;
+  --lv-muted: #686868;
+  color: #202020 !important;
+  color-scheme: light !important;
+  font-family: var(--mainFontFamily, system-ui, sans-serif);
+  text-shadow: none !important;
+}
+
+#lv-dialog {
+  background: var(--lv-bg) !important;
+  border: 1px solid var(--lv-line) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 12px 36px #0000001a !important;
+  backdrop-filter: none !important;
+}
+
+#lv-dialog.lv-standalone {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+#lv-dialog .lv-head { padding: 20px 20px 8px; }
+#lv-dialog h2 { font-weight: 650; letter-spacing: .06em; }
+#lv-dialog .lv-subtitle { color: var(--lv-muted); opacity: 1; }
+#lv-dialog .lv-page { padding-left: 20px; padding-right: 20px; }
+#lv-dialog .lv-tabs {
+  gap: 8px;
+  padding: 10px 20px 14px;
+  background: var(--lv-bg) !important;
+  border-bottom: 1px solid var(--lv-line);
+}
+
+#lv-dialog button, #lv-dialog a.lv-download {
+  min-height: 40px;
+  background: #ffffff !important;
+  color: #202020 !important;
+  border: 1px solid var(--lv-line) !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  font-weight: 500;
+}
+
+#lv-dialog button:hover, #lv-dialog a.lv-download:hover {
+  background: var(--lv-soft) !important;
+  border-color: var(--lv-accent) !important;
+}
+
+#lv-dialog button[aria-selected="true"], #lv-dialog button.lv-primary {
+  background: #242424 !important;
+  color: #ffffff !important;
+  border-color: var(--lv-accent) !important;
+  font-weight: 650;
+}
+
+#lv-dialog button:disabled { opacity: .45; }
+#lv-dialog label { color: #202020; letter-spacing: .02em; }
+#lv-dialog input, #lv-dialog select, #lv-dialog textarea {
+  color: #202020 !important;
+  background: #ffffff !important;
+  border: 1px solid var(--lv-line) !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  line-height: 1.65;
+  accent-color: var(--lv-accent);
+}
+
+#lv-dialog textarea { padding: 12px 14px; }
+#lv-dialog input::placeholder, #lv-dialog textarea::placeholder {
+  color: var(--lv-muted);
+  opacity: .8;
+}
+#lv-dialog option { color: #202020 !important; background: #ffffff !important; }
+#lv-dialog :is(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--lv-accent) !important;
+  outline-offset: 3px;
+}
+
+#lv-dialog details {
+  border-top: 1px solid var(--lv-line);
+  padding-top: 12px;
+}
+#lv-dialog summary { color: #202020; font-weight: 550; }
+#lv-dialog .lv-voice-entry, #lv-dialog [data-id="sync"] {
+  border: 1px solid var(--lv-line) !important;
+  border-radius: 2px !important;
+  padding: 12px 14px;
+  background: #ffffff;
+}
+#lv-dialog .lv-add-voice { background: var(--lv-soft) !important; }
+#lv-dialog details.lv-record {
+  margin: 10px 0;
+  border: 1px solid var(--lv-line) !important;
+  border-radius: 2px !important;
+  padding: 0 14px;
+  background: #ffffff;
+}
+#lv-dialog .lv-record > summary { padding: 13px 0; }
+#lv-dialog .lv-record[open] { padding-bottom: 14px; }
+#lv-dialog .lv-record[open] > summary {
+  border-bottom: 1px solid var(--lv-line);
+  margin-bottom: 10px;
+}
+#lv-dialog .lv-record-date, #lv-dialog .lv-record-voice {
+  color: var(--lv-muted);
+  opacity: 1;
+}
+#lv-dialog .lv-record-title { color: #202020; font-weight: 550; }
+#lv-dialog .lv-record-text { color: #202020; line-height: 1.8; }
+#lv-dialog pre {
+  background: var(--lv-soft) !important;
+  color: #202020;
+  border: 1px solid var(--lv-line);
+  border-radius: 2px !important;
+}
+#lv-dialog audio {
+  color-scheme: light;
+  border: 1px solid var(--lv-line);
+  border-radius: 2px;
+  background: #f1f3f4;
+}
+#lv-dialog .lv-lyrics {
+  border: 1px solid var(--lv-line);
+  border-radius: 2px;
+  background: #ffffff;
+}
+#lv-dialog .lv-lyrics button { border-color: transparent !important; }
+#lv-dialog .lv-lyrics .lv-current-lyric {
+  background: var(--lv-soft) !important;
+  color: var(--lv-accent) !important;
+  font-weight: 650;
+}
+#lv-dialog #lv-status {
+  background: var(--lv-soft);
+  color: #202020;
+  border-top: 1px solid var(--lv-line);
+  padding: 13px 20px;
+}
+#lv-selection {
+  background: #ffffff !important;
+  color: #202020 !important;
+  border: 1px solid var(--lv-line) !important;
+  border-radius: 2px !important;
+  box-shadow: 3px 3px 0 #242424 !important;
+  backdrop-filter: none !important;
+  padding: 10px 16px;
+  font-weight: 550;
+}
+#lv-selection:hover { background: var(--lv-soft) !important; }
+
+@media (max-width: 380px) {
+  #lv-dialog .lv-tabs { gap: 5px; padding-left: 14px; padding-right: 14px; }
+  #lv-dialog .lv-tabs button { padding-left: 7px; padding-right: 7px; }
+  #lv-dialog .lv-page { padding-left: 14px; padding-right: 14px; }
+}
+
+#lv-dialog#lv-dialog button,
+#lv-dialog#lv-dialog a.lv-download,
+#lv-selection#lv-selection {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #202020 !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+#lv-dialog#lv-dialog button:is(:hover, :focus, :focus-visible, :active, [aria-selected="true"], [aria-pressed="true"], [aria-expanded="true"], .lv-primary, .active, .selected),
+#lv-dialog#lv-dialog a.lv-download:is(:hover, :focus, :active),
+#lv-selection#lv-selection:is(:hover, :focus, :active) {
+  background: #242424 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border-color: #242424 !important;
+}
+
+#lv-dialog#lv-dialog button *,
+#lv-dialog#lv-dialog a.lv-download *,
+#lv-selection#lv-selection * {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+  text-shadow: none !important;
+}
+
+#lv-dialog#lv-dialog button:disabled {
+  background: #ededed !important;
+  color: #606060 !important;
+  -webkit-text-fill-color: #606060 !important;
+  opacity: 1 !important;
+}
