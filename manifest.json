@@ -1,0 +1,11 @@
+{
+  "display_name": "♪梨梨配音室",
+  "loading_order": 100,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
+  "css": "style.css",
+  "author": "pear-winter",
+  "version": "1.4.0",
+  "homePage": "https://github.com/pear-winter/li-voice"
+}
