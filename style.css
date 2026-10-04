@@ -12,3 +12,7 @@
 #lv-dialog .lv-record .lv-record-text{max-height:none;overflow:visible}
 #lv-dialog [data-id=translationResult]{margin-top:8px}
 #lv-dialog [data-id=useTranslation]{margin-top:10px}
+
+#lv-selection{inset:auto;right:auto;bottom:auto;margin:0;max-width:calc(100vw - 16px);min-height:40px;white-space:nowrap;touch-action:manipulation;user-select:none;-webkit-user-select:none;pointer-events:auto!important;opacity:1!important;visibility:visible!important;color:var(--SmartThemeBodyColor,CanvasText);box-shadow:0 3px 14px #0003}
+#lv-selection:not([hidden]){display:block!important}
+#lv-selection::backdrop{background:transparent;pointer-events:none}
