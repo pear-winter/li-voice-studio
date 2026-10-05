@@ -1,0 +1,24 @@
+const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
+const fs=require('fs'),cp=require('child_process'),path=require('path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..'),version=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'))).version;
+const line=JSON.parse(fs.readFileSync(process.env.LINE_PLAYER_PATH)).content;
+const helper=JSON.parse(fs.readFileSync(path.join(root,`helper/酒馆助手脚本-梨梨配音室-v${version}.json`))).content;
+const old=cp.execFileSync('git',['show','1c1327e:index.js'],{cwd:root,encoding:'utf8'});
+(async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});const page=await browser.newPage(),errors=[];let calls=0;
+page.on('pageerror',e=>errors.push(e.message));
+await page.route('http://tavern.test/**',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:'<div id="extensionsMenu"></div><div id="chat"><div class="mes"><div class="mes_text"><span class="pv" data-who="梨梨">“你好哥哥。”</span></div></div></div>'}));
+const wav=Buffer.alloc(44+16000);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
+await page.route('https://api.minimaxi.com/**',r=>{calls++;return r.fulfill({contentType:'audio/wav',body:wav});});
+await page.goto('http://tavern.test');await page.evaluate(()=>{window.SillyTavern={getContext:()=>({chat:[],name2:'测试角色'})};window.notices=[];window.toastr={warning:m=>notices.push(m),info:m=>notices.push(m)};localStorage.setItem('lili-minimax-voice-v1',JSON.stringify({selected:'pear',voices:[{id:'pear',name:'梨梨',voiceId:'pear-voice',speed:1,volume:1,pitch:0}]}));});
+await page.addScriptTag({content:old});await page.waitForFunction(()=>!document.querySelector('[data-id=saveConfig]').disabled);
+await page.evaluate(()=>window.__liVoiceStudio.open('config'));await page.locator('[data-id=key]').fill('mock-key');await page.locator('[data-id=miniName]').fill('梨梨接口');await page.locator('[data-id=saveConfig]').click();await page.waitForFunction(()=>!document.querySelector('[data-id=saveConfig]').disabled);await page.locator('[data-id=close]').click();
+assert.equal(await page.evaluate(()=>!!window.__liVoiceStudio.speech),false);
+async function iframe(code,id){await page.evaluate(({code,id})=>{const f=document.createElement('iframe');f.id=id;document.body.append(f);f.contentWindow.eval(code);},{code,id});}
+await iframe(helper,'studio-frame');await page.waitForFunction(()=>window.__liVoiceStudio?.speech?.ready());
+assert.equal(await page.locator('#lv-dialog').count(),1);assert.equal(await page.locator('[data-id=key]').inputValue(),'mock-key');assert.equal(await page.locator('[data-id=miniName]').inputValue(),'梨梨接口');
+await iframe(line,'line-frame');await page.locator('.pv-btn').click();await page.getByRole('button',{name:'配音并播放',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.pv-btn').dataset.state==='play');
+assert.equal(calls,1);assert.equal((await page.evaluate(()=>window.__liVoiceStudio.speech.find('你好哥哥。'))).length,1);
+await page.locator('.pv-btn').click();await page.locator('.pv-btn').click();await page.waitForFunction(()=>document.querySelector('.pv-btn').dataset.state==='play');assert.equal(calls,1,'repeat playback reuses saved audio');
+await page.evaluate(()=>document.getElementById('studio-frame').remove());assert.equal(await page.locator('#lv-dialog').count(),0);assert.equal(await page.evaluate(()=>!!window.__liVoiceStudio),false,'no stale public object');
+assert.deepEqual(await page.evaluate(()=>notices),[]);assert.deepEqual(errors,[]);console.log('PASS old extension → new helper → original dialogue player; generate, replay, saved profile and clean shutdown');await browser.close();
+})().catch(e=>{console.error(e);process.exit(1);});

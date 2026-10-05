@@ -8,7 +8,9 @@ payload='''(() => {
 'use strict';
 const KEY='__liVoiceHelperStandalone';
 const previous=window[KEY];
-if(window.__liVoiceStudio?.isAvailable?.() && (!previous || window.__liVoiceStudio!==previous.api))return;
+const existing=window.__liVoiceStudio;
+const compatible=existing?.speech && ['voices','ready','model','find','speak','url','openConfig'].every(name=>typeof existing.speech[name]==='function');
+if(existing?.isAvailable?.() && compatible && (!previous || existing!==previous.api))return;
 previous?.dispose();
 const style=document.createElement('style');
 style.id='lv-helper-base-style';
@@ -24,9 +26,10 @@ try {
  const owner={api,dispose(){
   if(disposed)return;
   disposed=true;
-  try{originalDestroy();}finally{style.remove();if(window[KEY]===owner)delete window[KEY];}
+  try{originalDestroy();}finally{style.remove();if(window.__liVoiceStudio===api)delete window.__liVoiceStudio;if(window.__liliMiniVoiceV1?.destroy===owner.dispose)delete window.__liliMiniVoiceV1;if(window[KEY]===owner)delete window[KEY];}
  }};
  api.destroy=owner.dispose;
+ window.__liliMiniVoiceV1.destroy=owner.dispose;
  window[KEY]=owner;
 } catch(error) {
  window.__liliMiniVoiceV1?.destroy?.();

@@ -1,6 +1,6 @@
 function initLiVoice() {
 'use strict';
-const W=window,D=W.document,NS='__liliMiniVoiceV1',STORE='lili-minimax-voice-v1',VERSION='1.10.3';
+const W=window,D=W.document,NS='__liliMiniVoiceV1',STORE='lili-minimax-voice-v1',VERSION='1.10.4';
 W[NS]?.destroy();
 const listeners=[],timers=new Set(),tasks=new Set();
 let dead=false,pending=null,generation=0,objectUrl='',lastSelection='',lastHighlight=null,lastReport='还没有检查连接。',menu=null;
