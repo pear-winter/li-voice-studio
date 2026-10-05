@@ -79,3 +79,19 @@ CHROMIUM_PATH=/path/to/chromium node tests/sync.cjs
 CHROMIUM_PATH=/path/to/chromium WORKBENCH_PATH=/path/to/workbench.js node tests/workbench-integration.cjs
 CHROMIUM_PATH=/path/to/chromium WORKBENCH_PATH=/path/to/workbench.js node tests/workbench-tools.cjs
 ```
+
+## 1.10.3 小剧场配音接口
+
+正式保留 `window.__liVoiceStudio.speech`（version: 1），用于监控终端、野火视窗等小剧场联动。扩展版与酒馆助手脚本版提供同一接口：
+
+- `voices()`：音色列表；`ready()`：是否已配置；`model()`：当前模型。
+- `find(text)`：按完整台词查找已保存录音。
+- `speak(text, profileId)`：按音色生成并保存录音，返回录音信息。
+- `url(id)`：获取录音的 Blob URL；调用方在播放结束或移除时负责 `URL.revokeObjectURL()`。
+- `openConfig()`：打开配置页。
+
+接口签名与用户提供的 v1.10.2 小剧场联动版一致，设置、音色、接口配置和录音沿用原存储。更新不清除本地数据。
+
+酒馆助手版：导入 `helper/酒馆助手脚本-梨梨配音室-v1.10.3.json` 到全局脚本库，替换旧配音室脚本并启用。魔法棒 → ♪梨梨配音室。已有扩展运行时不会重复启动。
+
+打包：`python3 helper/build-helper.py`，直接从正式版代码和样式生成，不需要另行添加联动补丁。
