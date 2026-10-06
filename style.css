@@ -26,3 +26,8 @@
 #lv-dialog.lv-embedded{position:relative;inset:auto;display:block;width:100%;max-width:none;max-height:none;margin:0;box-shadow:none;border:0;border-radius:0;overflow:visible;background:transparent;backdrop-filter:none}#lv-dialog.lv-embedded .lv-head{padding-top:12px}
 
 #lv-dialog .lv-script-line{padding:12px;margin:12px 0;border:1px solid var(--lv-line);border-radius:12px}#lv-dialog .lv-script-line textarea{min-height:85px}#lv-dialog .lv-record-mixer{padding:12px;border:1px solid var(--lv-line);border-radius:12px;margin-top:12px}#lv-dialog .lv-record>summary input[type=checkbox]{display:inline-block;width:18px;height:18px;min-height:18px;margin:0 8px 0 0;vertical-align:middle}
+
+
+#lv-dialog .lv-voice-group h4{margin:12px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--SmartThemeBorderColor,currentColor);font-size:1em;}
+#lv-dialog .lv-voice-entry .lv-row select{flex:1 1 160px;min-width:0;}
+#lv-dialog [data-id="sync"] fieldset{margin:10px 0;padding:10px;border:1px solid var(--SmartThemeBorderColor,currentColor);}
