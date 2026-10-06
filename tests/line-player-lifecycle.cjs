@@ -1,0 +1,11 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync(require('node:path').join(__dirname,'../index.js'),'utf8');
+const declaration=source.slice(source.indexOf('function initLinePlayer(){'),source.lastIndexOf('\n}\nif (document.readyState'));
+const documentListeners=new Set(),windowListeners=new Set();let styles=0,disconnects=0;
+const document={head:{append(){styles++;}},body:{},getElementById:()=>null,querySelectorAll:()=>[],createElement:()=>({remove(){styles--;}}),addEventListener:(type,fn)=>documentListeners.add(fn),removeEventListener:(type,fn)=>documentListeners.delete(fn)};
+const W={document,localStorage:{getItem:()=>null},addEventListener:(type,fn)=>windowListeners.add(fn),removeEventListener:(type,fn)=>windowListeners.delete(fn),URL:{revokeObjectURL(){}},clearTimeout(){},Audio:class{addEventListener(){}pause(){}},MutationObserver:class{observe(){}disconnect(){disconnects++;}}};
+const context=vm.createContext({window:W,Map,Set,RegExp,String,Object,NodeFilter:{},console});vm.runInContext(declaration,context);
+const a=vm.runInContext('initLinePlayer()',context);assert.equal(styles,1);assert.equal(documentListeners.size,1);assert.equal(windowListeners.size,1);
+const b=vm.runInContext('initLinePlayer()',context);assert.equal(styles,1,'reload replaces old styles');assert.equal(disconnects,1);assert.equal(W.__pearLinePlayerV1,b);assert.equal(documentListeners.size,1,'reload does not multiply listeners');
+a.dispose();assert.equal(styles,1,'old dispose is idempotent');b.dispose();b.dispose();assert.equal(styles,0);assert.equal(windowListeners.size,0);assert.equal(documentListeners.size,0);assert.equal(W.__pearLinePlayerV1,undefined);assert.equal(disconnects,2);
+vm.runInContext('initLinePlayer()',context).dispose();assert.equal(styles,0);console.log('PASS built-in player initialization, replacement, disable/re-enable, idempotent disposal, listener and style cleanup');
