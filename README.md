@@ -1,4 +1,4 @@
-# v1.12.2 配置与音色管理
+# v1.12.3 Termux 免配置鱼声连接
 
 - MiniMax 与鱼声接口默认折叠，MiniMax 排在鱼声上面。
 - 导入导出放在配置页最后。导出可选音色（含分组、排序）、已存储接口、录音（含收藏状态）、外观与配音设置；至少选择一项。Key 默认不导出，需单独勾选。
@@ -143,7 +143,9 @@ CHROMIUM_PATH=/path/to/chromium WORKBENCH_PATH=/path/to/workbench.js node tests/
 ### 1.12.1
 保存鱼声接口会同步启用鱼声；音色编辑明确区分 MiniMax Voice ID 和鱼声 Reference ID，鱼声支持粘贴声线链接。地址兼容根地址、/v1 和 /v1/tts。错误提示区分本地缺少声线和接口 HTTP 错误。存储组合器内直接展开 BGM 上传、工作台音乐选择、音量与间隔设置，后期配乐入口也会展开。单个操作按钮铺满一行，多按钮均分可用宽度。
 
-### 1.12.2 鱼声酒馆转发与控件间距
-鱼声增加自动、酒馆转发、浏览器直连三个请求方式。自动在酒馆内优先使用同源 /proxy/ 转发，原生 App 保持原生请求。转发携带酒馆 CSRF 凭证及鱼声 Authorization/model，读取二进制音频；不自动重试生成请求。
-若提示「酒馆转发尚未开启」，在运行酒馆的服务器根目录 config.yaml 把已有的 `enableCorsProxy: false` 改为 `enableCorsProxy: true`，保存后停止并重新启动酒馆。只在平板浏览器刷新无法开启服务器功能。若无法管理酒馆服务器，需要联系服务器管理者开启；只更新前端扩展无法打开此服务。使用已有酒馆登录和访问限制。
-独立按钮与输入框之间保留 12px 间距，多按钮继续均分一行。
+### 1.12.2 控件间距（连接方式已由 1.12.3 替代）
+独立按钮与输入框之间保留 12px 间距，多按钮继续均分一行。旧版 /proxy/ 方案已替换，当前扩展无需开启 enableCorsProxy。
+
+### 1.12.3 Termux 免配置鱼声连接（仅扩展）
+更新扩展后刷新页面，鱼声「自动」使用酒馆已存在的自定义 API 通道 /api/backends/chat-completions/generate。无需开启 CORS proxy、修改 config.yaml 或安装服务端插件。该请求传入独立参数，不修改聊天 API 配置和已有密钥，不自动重试付费生成。浏览器直连和原生 App 路径保留。
+适配说明：利用 custom_include_headers/body 和 custom_exclude_body 传入 Fish 参数；custom_url 的 URL fragment 防止服务器添加的 chat/completions 后缀改变 TTS 目标路径；stream 标志仅用于请求原始响应转发，Fish 请求体不包含 stream。二进制 MP3 通过帧头或 ID3 签名识别，错误 JSON 不作为音频。上游接口若更改，此适配可能需更新。脚本版本保持 1.12.2，本次只更新扩展。
