@@ -9,9 +9,10 @@ payload='''(() => {
 const KEY='__liVoiceHelperStandalone';
 const previous=window[KEY];
 const existing=window.__liVoiceStudio;
-const compatible=existing?.speech && ['voices','ready','model','find','speak','url','openConfig'].every(name=>typeof existing.speech[name]==='function');
+const compatible=String(existing?.version||'0').localeCompare('TARGET_VERSION',undefined,{numeric:true})>=0 && existing?.speech && ['voices','ready','model','find','speak','url','openConfig'].every(name=>typeof existing.speech[name]==='function');
 if(existing?.isAvailable?.() && compatible && (!previous || existing!==previous.api))return;
 previous?.dispose();
+if(existing?.isAvailable?.())existing.destroy?.();
 const style=document.createElement('style');
 style.id='lv-helper-base-style';
 style.textContent=CSS_VALUE;
@@ -37,7 +38,7 @@ try {
  console.error('[梨梨配音室·酒馆助手]',error);
  window.toastr?.error('配音室启动失败：'+error.message);
 }
-})();'''.replace('CSS_VALUE',json.dumps(css,ensure_ascii=False)).replace('SOURCE_VALUE',source)
+})();'''.replace('TARGET_VERSION',version).replace('CSS_VALUE',json.dumps(css,ensure_ascii=False)).replace('SOURCE_VALUE',source)
 content='''// ♪梨梨配音室 VERSION · 酒馆助手脚本版（全部代码与样式内置）
 (() => {
 'use strict';
@@ -73,3 +74,4 @@ output=root/'helper'/f'酒馆助手脚本-梨梨配音室-v{version}.json'
 output.write_text(json.dumps(artifact,ensure_ascii=False,indent=2)+'\n')
 (root/'helper'/'runtime.js').write_text(content)
 print(output)
+
