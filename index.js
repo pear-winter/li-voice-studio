@@ -1,6 +1,6 @@
 function initLiVoice() {
 'use strict';
-const W=window,D=W.document,NS='__liliMiniVoiceV1',STORE='lili-minimax-voice-v1',VERSION='1.12.4';
+const W=window,D=W.document,NS='__liliMiniVoiceV1',STORE='lili-minimax-voice-v1',VERSION='1.12.5';
 W[NS]?.destroy();
 const listeners=[],timers=new Set(),tasks=new Set();
 let linePlayerOwner=null;
@@ -410,7 +410,7 @@ on($('zipDownload'),'click',async()=>{const b=$('zipDownload');b.disabled=true;t
 const musicPicker=node('div');musicPicker.innerHTML='<button type="button" data-id="loadMusicBgm">从工作台音乐选择 BGM</button><select data-id="musicBgm" aria-label="工作台背景音乐"><option value="">先读取工作台音乐</option></select><p>可读取当前站点工作台已保存的本地音频；在线歌曲请先下载导入。</p>';mixOptions.append(musicPicker);let musicBgmRows=[];
 on($('loadMusicBgm'),'click',async()=>{try{musicBgmRows=await new Promise((resolve,reject)=>{const req=W.indexedDB.open('lili-music');req.onupgradeneeded=()=>{req.transaction.abort();reject(Error('当前站点还没有工作台音乐。'));};req.onerror=()=>reject(Error('无法读取工作台音乐。'));req.onsuccess=()=>{const db=req.result;if(!db.objectStoreNames.contains('songs')){db.close();return reject(Error('工作台音乐格式不支持。'));}const tx=db.transaction('songs','readonly'),get=tx.objectStore('songs').getAll();tx.oncomplete=()=>{db.close();resolve(get.result.filter(r=>r.blob?.size));};tx.onerror=()=>{db.close();reject(tx.error);};};});const select=$('musicBgm');select.replaceChildren(new Option('选择本地音乐',''),...musicBgmRows.map(r=>new Option(r.title||'未命名',r.id)));status('读取到 '+musicBgmRows.length+' 个本地音频。');}catch(e){status(safe(e.message));}});
 on($('musicBgm'),'change',()=>{const row=musicBgmRows.find(r=>r.id===$('musicBgm').value);if(!row)return;if(row.blob.size>50*1024*1024)return status('BGM 最大 50 MB。');mixBackground=new W.File([row.blob],row.title||'工作台音乐',{type:row.blob.type});$('mixBgm').value='';$('mixBgmStatus').textContent='已选择工作台音乐：'+row.title;});
-W[NS]={destroy};W.__liVoiceStudio={owner:'li-voice-studio',apiVersion:1,version:VERSION,destroy,mount:mountStudio,unmount:unmountStudio,isAvailable:()=>!dead,open:which=>{open();if(['read','batch','history','config'].includes(which))tab(which);},speech:{version:1,voices:()=>config.voices.map(v=>({id:v.id,name:v.name,voiceId:effectiveVoice(v).voiceId})),ready:()=>{try{return !dead&&!!((config.provider==='fish'?config.fish.host&&config.fish.model:config.host&&config.model)&&cleanKey());}catch(e){return false;}},model:()=>config.provider==='fish'?config.fish.model:config.model,async find(text){const t=String(text||'').trim();if(!t)return [];return (await historyList()).filter(r=>r.text===t&&!r.mix&&(r.provider||'minimax')===config.provider).sort((a,b)=>b.createdAt-a.createdAt).map(r=>({id:r.id,voiceName:r.voiceName,voiceId:r.voiceId,createdAt:r.createdAt}));},async speak(text,profileId){if(dead)throw Error('配音室已停止。');const t=String(text||'').trim();if(!t)throw Error('没有可配音的文字。');if(t.length>9999)throw Error('单次最多 9999 个字符。');const v=effectiveVoice(config.voices.find(x=>x.id===profileId)||currentVoice());if(!v||!v.voiceId)throw Error(missingVoiceMessage(v));let c;try{c=readConfig();}catch(e){c={...config};}const key=cleanKey();if(!key)throw Error('请先在配音室配置页填写 API Key。');validatePerformance(t,c.model,v.emotion||'');const blob=await synthesizeVoice(c,v,t,key);if(!blob||!blob.size)throw Error('接口返回空音频。');const row=await saveRecording(blob,c,v,t,null);void loadInline();W.dispatchEvent(new W.Event('li-voice-studio:change'));return {id:row.id,voiceName:row.voiceName,voiceId:row.voiceId,createdAt:row.createdAt};},async url(id){const b=await historyBlob(id);return W.URL.createObjectURL(b);},openConfig:()=>{open();tab('config');}}};const lineSettings=node('details');lineSettings.innerHTML='<summary>正文台词播放键</summary><label><input type="checkbox" data-id="linePlayerEnabled">在台词旁显示播放键</label><p>点击 ▶ 播放台词，长按可换声线。跟随首页的鱼声 / MiniMax 选择。原说话人标记正则和世界书继续使用。</p>';$('configPage').prepend(lineSettings);$('linePlayerEnabled').checked=config.linePlayerEnabled!==false;
+W[NS]={destroy};W.__liVoiceStudio={owner:'li-voice-studio',apiVersion:1,version:VERSION,destroy,mount:mountStudio,unmount:unmountStudio,isAvailable:()=>!dead,open:which=>{open();if(['read','batch','history','config'].includes(which))tab(which);},speech:{version:1,provider:()=>config.provider,voices:(provider=config.provider)=>config.voices.map(v=>({id:v.id,name:v.name,provider,voiceId:effectiveVoice(v,provider).voiceId})),ready:(provider=config.provider)=>{try{return !dead&&!!((provider==='fish'?config.fish.host&&config.fish.model:config.host&&config.model)&&cleanKey(provider));}catch(e){return false;}},model:(provider=config.provider)=>provider==='fish'?config.fish.model:config.model,async find(text,provider=config.provider){const t=String(text||'').trim();if(!t)return [];return (await historyList()).filter(r=>r.text===t&&!r.mix&&(r.provider||'minimax')===provider).sort((a,b)=>b.createdAt-a.createdAt).map(r=>({id:r.id,voiceName:r.voiceName,voiceId:r.voiceId,createdAt:r.createdAt}));},async speak(text,profileId,provider=config.provider){if(dead)throw Error('配音室已停止。');const t=String(text||'').trim();if(!t)throw Error('没有可配音的文字。');if(t.length>9999)throw Error('单次最多 9999 个字符。');const v=effectiveVoice(config.voices.find(x=>x.id===profileId)||currentVoice(),provider);if(!v||!v.voiceId)throw Error(missingVoiceMessage(v,provider));const c=readConfig(provider),key=cleanKey(provider);if(!key)throw Error('请先在配音室配置页填写 API Key。');validatePerformance(t,c.model,v.emotion||'');const blob=await synthesizeVoice(c,v,t,key);if(!blob||!blob.size)throw Error('接口返回空音频。');const row=await saveRecording(blob,c,v,t,null);void loadInline();W.dispatchEvent(new W.Event('li-voice-studio:change'));return {id:row.id,voiceName:row.voiceName,voiceId:row.voiceId,createdAt:row.createdAt};},async url(id){const b=await historyBlob(id);return W.URL.createObjectURL(b);},openConfig:()=>{open();tab('config');}}};const lineSettings=node('details');lineSettings.innerHTML='<summary>正文台词播放键</summary><label><input type="checkbox" data-id="linePlayerEnabled">在台词旁显示播放键</label><p>点击 ▶ 播放台词，长按可选择鱼声 / MiniMax 和音色重新配音。生成文字期间隐藏播放键；每层楼工具栏可显示或收起。原说话人标记正则和世界书继续使用。</p>';$('configPage').prepend(lineSettings);$('linePlayerEnabled').checked=config.linePlayerEnabled!==false;
 function applyLinePlayer(){linePlayerOwner?.dispose();linePlayerOwner=null;if($('linePlayerEnabled').checked){try{linePlayerOwner=initLinePlayer();}catch(e){status('台词播放键启动失败：'+safe(e.message));}}else W.__pearLinePlayerV1?.dispose?.();}
 on($('linePlayerEnabled'),'change',()=>{config.linePlayerEnabled=$('linePlayerEnabled').checked;store();applyLinePlayer();status(config.linePlayerEnabled?'已启用正文台词播放键。':'已关闭正文台词播放键。');});applyLinePlayer();$('configPage').prepend(fishPanel);$('configPage').prepend(miniPanel);$('configPage').append(syncBox);
 W.dispatchEvent(new W.Event('li-voice-studio:change'));scheduleFavorites();on(window,'pagehide',event=>{if(!event.persisted)destroy();});
@@ -441,25 +441,25 @@ const speakText = t => String(t || '').trim().replace(/^[“「『"]+|[”」』
 
 function voiceOf(who) {
   const s = api(); if (!s) return null;
-  const id = getMap()[who]; return s.voices().find(v => v.id === id) || null;
+  const saved=getMap()[who],id=typeof saved==='string'?saved:saved?.id,provider=typeof saved==='object'?saved.provider:s.provider?.();return s.voices(provider).find(v=>v.id===id)||null;
 }
 let disposed=false;const rawNodes=new Map(),pressTimers=new Set();
 const urlCache = new Map();
 async function lookup(text, v) {
-  const s = api(), k = s.model() + '|' + v.voiceId + '|' + v.id + '|' + text;
+  const s = api(), k = (v.provider||s.provider?.()||'minimax')+'|'+s.model(v.provider) + '|' + v.voiceId + '|' + v.id + '|' + text;
   if (urlCache.has(k)) return urlCache.get(k);
-  let rows = await s.find(text), hit = rows.find(r => r.voiceId === v.voiceId);
-  if (!hit && plain(text) !== text) { rows = await s.find(plain(text)); hit = rows.find(r => r.voiceId === v.voiceId); }
+  let rows = await s.find(text,v.provider), hit = rows.find(r => r.voiceId === v.voiceId);
+  if (!hit && plain(text) !== text) { rows = await s.find(plain(text),v.provider); hit = rows.find(r => r.voiceId === v.voiceId); }
   if (!hit) return null;
   const u = await s.url(hit.id); urlCache.set(k, u); return u;
 }
-async function make(text, v) {
+async function make(text, v, force=false) {
   const s = api();
-  const found = await lookup(text, v); if (found) return found;
+  const found = force?null:await lookup(text, v); if (found) return found;
   let row;
-  try { row = await s.speak(text, v.id); }
-  catch (e) { const m = e?.message || ''; if (/语气词|停顿/.test(m) && plain(text) && plain(text) !== text) row = await s.speak(plain(text), v.id); else throw e; }
-  const u = await s.url(row.id); urlCache.set(s.model() + '|' + v.voiceId + '|' + v.id + '|' + text, u); return u;
+  try { row = await s.speak(text, v.id,v.provider); }
+  catch (e) { const m = e?.message || ''; if (/语气词|停顿/.test(m) && plain(text) && plain(text) !== text) row = await s.speak(plain(text), v.id,v.provider); else throw e; }
+  const u = await s.url(row.id); urlCache.set((v.provider||s.provider?.()||'minimax')+'|'+s.model(v.provider) + '|' + v.voiceId + '|' + v.id + '|' + text, u); return u;
 }
 
 /* ---------- 样式 ---------- */
@@ -471,9 +471,11 @@ style.textContent = `
 .pv-btn[data-state=play]{opacity:1;background:currentColor}
 .pv-btn[data-state=play]::after{content:'';width:.42em;height:.42em;background:var(--SmartThemeBlurTintColor,#111)}
 .pv-btn[data-state=play] span{display:none}
-.pv-btn[data-state=busy]{opacity:1;animation:pvblink .9s steps(2) infinite}
+.pv-btn[data-state=busy]{opacity:1;cursor:wait}
 .pv-btn[data-state=done]{opacity:.7;border-style:solid}
-@keyframes pvblink{50%{opacity:.25}}
+.pv-generation .pv-btn,.mes[data-pv-buttons-hidden="1"] .pv-btn{display:none!important}
+.pv-floor-toggle{cursor:pointer}
+.pv-generation .pv-floor-toggle{visibility:hidden}
 .pv-now{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.28em}
 .pv-pop{position:fixed;z-index:99999;width:min(300px,calc(100vw - 20px));padding:12px 14px;border:1px solid var(--SmartThemeBorderColor,rgba(128,128,128,.4));border-radius:10px;background:var(--SmartThemeBlurTintColor,rgba(30,30,30,.9));color:var(--SmartThemeBodyColor,#ddd);font-family:var(--mainFontFamily,inherit);font-size:calc(var(--mainFontSize,15px) * .9);line-height:1.6;box-shadow:0 4px 16px var(--SmartThemeShadowColor,rgba(0,0,0,.4));-webkit-backdrop-filter:blur(var(--SmartThemeBlurStrength,8px));backdrop-filter:blur(var(--SmartThemeBlurStrength,8px))}
 .pv-pop .h{font-size:.8em;opacity:.65;margin-bottom:6px}
@@ -506,38 +508,24 @@ async function playUrl(u, btn, span) {
 /* ---------- 选音色（确认后才配） ---------- */
 let pop = null;
 function closePop() { pop?.remove(); pop = null; }
-function choose(btn, who, text, onGo) {
-  closePop();
-  const s = api(), list = s.voices(), map = getMap();
-  pop = D.createElement('div'); pop.className = 'pv-pop';
-  const h = D.createElement('div'); h.className = 'h'; h.textContent = '这句由谁来读'; pop.append(h);
-  const q = D.createElement('p'); q.className = 'q'; q.textContent = show(text); pop.append(q);
-  if (!s.ready() || !list.length) {
-    const n = D.createElement('p'); n.className = 'n'; n.textContent = '配音室还没填好接口（API Key、模型或音色）。'; pop.append(n);
-    const b = D.createElement('div'); b.className = 'b';
-    const cfg = D.createElement('button'); cfg.className = 'go menu_button'; cfg.textContent = '打开配音室配置'; cfg.onclick = () => { closePop(); try { s.openConfig(); } catch (e) {} };
-    const x = D.createElement('button'); x.className = 'menu_button'; x.textContent = '取消'; x.onclick = closePop;
-    b.append(cfg, x); pop.append(b);
-  } else {
-    const row = D.createElement('label'), name = D.createElement('span'), sel = D.createElement('select'); sel.className = 'text_pole';
-    name.textContent = who; row.append(name, sel);
-    for (const v of list) { const o = D.createElement('option'); o.value = v.id; o.textContent = v.name; sel.append(o); }
-    if (map[who] && list.some(v => v.id === map[who])) sel.value = map[who];
-    pop.append(row);
-    const n = D.createElement('p'); n.className = 'n';
-    n.textContent = '会调用 MiniMax 配 1 句（约 ' + plain(text).length + ' 字），之后这句直接播放、不再扣费。';
-    pop.append(n);
-    const b = D.createElement('div'); b.className = 'b';
-    const go = D.createElement('button'); go.className = 'go menu_button'; go.textContent = '配音并播放';
-    const x = D.createElement('button'); x.className = 'menu_button'; x.textContent = '取消';
-    go.onclick = () => { const m = getMap(); m[who] = sel.value; setMap(m); closePop(); onGo(); };
-    x.onclick = closePop; b.append(go, x); pop.append(b);
-  }
-  D.body.append(pop);
-  const r = btn.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight, vw = W.innerWidth, vh = W.innerHeight;
-  pop.style.left = Math.max(10, Math.min(vw - pw - 10, r.left - pw / 2)) + 'px';
-  pop.style.top = (r.bottom + ph + 12 < vh ? r.bottom + 8 : Math.max(10, r.top - ph - 8)) + 'px';
+function choose(btn, who, text, onGo, force=false) {
+  closePop();const s=api(),saved=getMap()[who];if(!s)return;
+  pop=D.createElement('div');pop.className='pv-pop';
+  const h=D.createElement('div');h.className='h';h.textContent=force?'重新选择接口和音色':'这句由谁来读';pop.append(h);
+  const q=D.createElement('p');q.className='q';q.textContent=show(text);pop.append(q);
+  const providerRow=D.createElement('label'),providerName=D.createElement('span'),provider=D.createElement('select');providerName.textContent='配音接口';provider.className='text_pole';
+  for(const [value,name] of [['minimax','MiniMax'],['fish','鱼声 · Fish Audio']]){const o=D.createElement('option');o.value=value;o.textContent=name;provider.append(o);}provider.value=(typeof saved==='object'&&saved?.provider)||s.provider?.()||'minimax';providerRow.append(providerName,provider);pop.append(providerRow);
+  const row=D.createElement('label'),name=D.createElement('span'),sel=D.createElement('select');sel.className='text_pole';name.textContent=who;row.append(name,sel);pop.append(row);
+  const n=D.createElement('p');n.className='n';pop.append(n);
+  const b=D.createElement('div');b.className='b';const go=D.createElement('button'),x=D.createElement('button');go.className='go menu_button';go.textContent=force?'重新配音并播放':'配音并播放';x.className='menu_button';x.textContent='取消';x.onclick=closePop;b.append(go,x);pop.append(b);
+  const cfg=D.createElement('button');cfg.className='menu_button';cfg.textContent='打开配音室配置';cfg.style.width='100%';cfg.style.marginTop='10px';cfg.onclick=()=>{closePop();s.openConfig();};pop.append(cfg);
+  let list=[];const refresh=()=>{const previous=sel.value;list=s.voices(provider.value);sel.replaceChildren();for(const v of list){const o=D.createElement('option');o.value=v.id;o.textContent=v.name+(v.voiceId?'':' · 未设置该接口 ID');o.disabled=!v.voiceId;sel.append(o);}const preferred=previous||(typeof saved==='string'?saved:saved?.id);sel.value=list.some(v=>v.id===preferred&&v.voiceId)?preferred:list.find(v=>v.voiceId)?.id||'';update();};
+  const update=()=>{const v=list.find(v=>v.id===sel.value),ready=s.ready(provider.value);go.disabled=!ready||!v?.voiceId;n.textContent=!ready?'请先保存'+(provider.value==='fish'?'鱼声':'MiniMax')+'接口和 API Key。':!v?.voiceId?'请在音色管理中填写这个接口的声线 ID。':(force?'会重新生成这一句，':'会生成或复用这一句，')+'使用 '+(provider.value==='fish'?'鱼声':'MiniMax')+'（约 '+plain(text).length+' 字）。新生成按接口计费。';};
+  provider.onchange=refresh;sel.onchange=update;
+  go.onclick=()=>{const v=list.find(v=>v.id===sel.value);if(!v?.voiceId||!s.ready(provider.value))return;const m=getMap();m[who]={id:v.id,provider:provider.value};setMap(m);closePop();onGo({...v,provider:provider.value});};refresh();
+  D.body.append(pop);const r=btn.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight,vw=W.innerWidth,vh=W.innerHeight;pop.style.left=Math.max(10,Math.min(vw-pw-10,r.left-pw/2))+'px';pop.style.top=(r.bottom+ph+12<vh?r.bottom+8:Math.max(10,r.top-ph-8))+'px';
 }
+
 function outside(e) { if (pop && !pop.contains(e.target) && !e.target.closest?.('.pv-btn')) closePop(); }
 D.addEventListener('pointerdown', outside, true);
 
@@ -547,10 +535,9 @@ async function onPress(btn, span, force) {
   if (current && current.btn === btn && !force) { if (audio.paused) { setState(btn, 'play'); audio.play().catch(() => {}); } else stopCurrent(); return; }
   const who = span.dataset.pvWho || UNLABELED, text = span.dataset.pvText;
   if (!text) return;
-  const run = async () => {
-    const v = voiceOf(who);
+  const run = async v => {
     setState(btn, 'busy');
-    try { const u = await make(text, v); await playUrl(u, btn, span); }
+    try { const u = await make(text, v, force); await playUrl(u, btn, span); }
     catch (e) { setState(btn, ''); toast('配音失败：' + (e?.message || e), true); }
   };
   const v = voiceOf(who);
@@ -561,7 +548,7 @@ async function onPress(btn, span, force) {
     if (u) { await playUrl(u, btn, span); return; }
   }
   if(disposed)return;
-  choose(btn, who, text, run);
+  choose(btn, who, text, run, force);
 }
 
 /* ---------- 挂载 ---------- */
@@ -621,13 +608,16 @@ function unlabeled(root) {
     for (const sp of spans) attach(sp, UNLABELED);
   }
 }
+let generating=false;const eventCleanup=[];
+function generationActive(){if(generating)return true;const stop=D.getElementById('mes_stop');return !!(stop?.getClientRects?.().length);}
+function floorToggle(mes){if(!mes||mes.querySelector('.pv-floor-toggle'))return;const tools=mes.querySelector('.extraMesButtons')||mes.querySelector('.mes_buttons');if(!tools)return;const button=D.createElement('button');button.type='button';button.className='pv-floor-toggle menu_button';button.title='显示 / 收起本层台词播放键';button.setAttribute('aria-label',button.title);button.textContent='♫';button.setAttribute('aria-pressed',String(mes.dataset.pvButtonsHidden!=='1'));button.onclick=()=>{const hidden=mes.dataset.pvButtonsHidden==='1';mes.dataset.pvButtonsHidden=hidden?'0':'1';button.setAttribute('aria-pressed',String(hidden));if(hidden)schedule();};tools.append(button);}
 let scanning = false;
 function scan() {
-  if (disposed || scanning) return; scanning = true;
+  if (disposed || scanning) return;if(generationActive()){D.documentElement?.classList.add('pv-generation');schedule();return;} scanning = true;D.documentElement?.classList.remove('pv-generation');
   try {
     for (const box of D.querySelectorAll('#chat .mes .mes_text')) {
       if (box.closest('.mes')?.querySelector('.mes_text textarea')) continue; // 正在编辑
-      labeled(box); unlabeled(box);
+      labeled(box); unlabeled(box);if(box.querySelector('.pv-btn'))floorToggle(box.closest('.mes'));
     }
   } finally { scanning = false; }
 }
@@ -636,19 +626,20 @@ const schedule = () => { if (disposed || pending) return; pending = W.setTimeout
 const chatEl = D.getElementById('chat') || D.body;
 const observer = new W.MutationObserver(records => {
   if (scanning) return;
-  if (records.every(r => [...r.addedNodes].every(n => n.nodeType === 1 && (n.classList?.contains('pv-btn') || n.classList?.contains('pv') || n.classList?.contains('pv-pop'))))) return;
-  schedule();
+  if (records.every(r => r.type==='childList' && r.addedNodes.length>0 && [...r.addedNodes].every(n => n.nodeType === 1 && (n.classList?.contains('pv-btn') || n.classList?.contains('pv') || n.classList?.contains('pv-pop'))))) return;
+  if(generationActive()){D.documentElement?.classList.add('pv-generation');schedule();return;}schedule();
 });
 observer.observe(chatEl, { childList: true, subtree: true, characterData: true });
 function clearCache(){for(const u of urlCache.values())W.URL.revokeObjectURL(u);urlCache.clear();}
 const onVoiceChange = () => {stopCurrent();closePop();clearCache();};
 W.addEventListener('li-voice-studio:change', onVoiceChange);
-scan();
+const context=ctx(),events=context?.event_types,source=context?.eventSource;if(events&&source?.on){for(const [name,start] of [['GENERATION_STARTED',true],['GENERATION_ENDED',false],['GENERATION_STOPPED',false]]){const type=events[name];if(!type)continue;const fn=()=>{generating=start;if(start)D.documentElement?.classList.add('pv-generation');if(start){stopCurrent();closePop();W.clearTimeout(pending);pending=0;}else schedule();};source.on(type,fn);eventCleanup.push(()=>source.removeListener?.(type,fn));}}
+if(generationActive()){D.documentElement?.classList.add('pv-generation');schedule();}else scan();
 
 function dispose() {
   if(disposed)return;disposed=true;for(const id of pressTimers)W.clearTimeout(id);pressTimers.clear();
   for(const [node,raw] of rawNodes)if(node.isConnected&&node.nodeValue===show(raw))node.nodeValue=raw;rawNodes.clear();
-  clearCache(); observer.disconnect(); W.clearTimeout(pending); stopCurrent(); closePop();
+  for(const off of eventCleanup)off();D.documentElement?.classList.remove('pv-generation');for(const b of D.querySelectorAll('.pv-floor-toggle'))b.remove();for(const mes of D.querySelectorAll('.mes[data-pv-buttons-hidden]'))delete mes.dataset.pvButtonsHidden;clearCache(); observer.disconnect(); W.clearTimeout(pending); stopCurrent(); closePop();
   D.removeEventListener('pointerdown', outside, true);
   W.removeEventListener('li-voice-studio:change', onVoiceChange);
   for (const b of D.querySelectorAll('.pv-btn')) b.remove();
