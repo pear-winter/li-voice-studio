@@ -39,3 +39,10 @@
 #lv-dialog .lv-page .lv-row > span { flex:1 0 100%; overflow-wrap:anywhere; }
 #lv-dialog .lv-record-mixer > details { margin:16px 0; }
 #lv-dialog .lv-page button[hidden] { display:none; }
+
+/* Standalone actions need the same breathing room as action rows. */
+#lv-dialog .lv-page > button,
+#lv-dialog .lv-page details > button,
+#lv-dialog .lv-page label > button,
+#lv-dialog .lv-page details > div:not(.lv-row):not(.lv-grid) > button { display:block; margin-top:12px; margin-bottom:12px; }
+#lv-dialog .lv-page textarea { display:block; }
