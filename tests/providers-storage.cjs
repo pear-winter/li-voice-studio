@@ -3,9 +3,9 @@ const source=fs.readFileSync(require('node:path').join(__dirname,'../index.js'),
 const elements=new Map(),handlers=new Map(),calls=[],records=[];
 const $=id=>{if(!elements.has(id))elements.set(id,{id,value:'',checked:false,textContent:''});return elements.get(id);};
 let confirms=[],operations=[];
-const context=vm.createContext({Blob,TextEncoder,DataView,Uint8Array,Date,Set,Map,Math,Number,Error,JSON,Promise,console,config:{provider:'fish'},W:{Blob,setTimeout,confirm:()=>confirms.shift()},$,on:(el,event,fn)=>handlers.set(el.id,fn),status:()=>{},safe:x=>x,pending:null,batchBusy:false,mixBusy:false,syncBusy:false,profilesBusy:false,
+const context=vm.createContext({Blob,TextEncoder,TextDecoder,URL,DataView,Uint8Array,Date,Set,Map,Math,Number,Error,JSON,Promise,console,config:{provider:'fish'},W:{Blob,setTimeout,confirm:()=>confirms.shift()},$,on:(el,event,fn)=>handlers.set(el.id,fn),status:()=>{},safe:x=>x,pending:null,batchBusy:false,mixBusy:false,syncBusy:false,profilesBusy:false,
  request:async(url,body,options)=>{calls.push({url,body,options});return{ok:true,status:200,type:'audio/mpeg',bytes:Uint8Array.from([1,2,3]).buffer};},endpoint:(c,p)=>c.host+p,historyList:async()=>records,historyBlob:async id=>new Blob([id]),clearInlineCache:()=>{},stopHistory:()=>{},stopInline:()=>{},loadInline:async()=>{},renderHistory:async()=>{},recordPicks:new Set(),historyTx:async(names,mode,fn)=>fn({objectStore:name=>({delete:id=>operations.push([name,id])})}),recordingName:r=>(r.title||r.id)+'.mp3'});
-for(const name of ['effectiveVoice','raw','dateBoundary','crc32','zipAudio'])vm.runInContext(source.split('\n').find(l=>l.startsWith((name==='raw'||name==='zipAudio'?'async ':'')+'function '+name+'(')),context);
+for(const name of ['normalizeFishHost','normalizeFishVoice','effectiveVoice','raw','dateBoundary','crc32','zipAudio'])vm.runInContext(source.split('\n').find(l=>l.startsWith((name==='raw'||name==='zipAudio'?'async ':'')+'function '+name+'(')),context);
 vm.runInContext(source.split('\n').find(l=>l.startsWith("on($('deleteOld'),'click'")),context);
 (async()=>{
 assert.equal(vm.runInContext("effectiveVoice({voiceId:'mini',fishVoiceId:'fish'}).voiceId",context),'fish');

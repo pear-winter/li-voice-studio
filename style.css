@@ -31,3 +31,11 @@
 #lv-dialog .lv-voice-group h4{margin:12px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--SmartThemeBorderColor,currentColor);font-size:1em;}
 #lv-dialog .lv-voice-entry .lv-row select{flex:1 1 160px;min-width:0;}
 #lv-dialog [data-id="sync"] fieldset{margin:10px 0;padding:10px;border:1px solid var(--SmartThemeBorderColor,currentColor);}
+
+/* Fill action rows while keeping the dialog header and inline players compact. */
+#lv-dialog .lv-page button { width:100%; }
+#lv-dialog .lv-page .lv-row > button,
+#lv-dialog .lv-page .lv-row > a.lv-download { flex:1 1 110px; width:auto; text-align:center; }
+#lv-dialog .lv-page .lv-row > span { flex:1 0 100%; overflow-wrap:anywhere; }
+#lv-dialog .lv-record-mixer > details { margin:16px 0; }
+#lv-dialog .lv-page button[hidden] { display:none; }
