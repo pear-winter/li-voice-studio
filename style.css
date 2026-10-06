@@ -46,3 +46,9 @@
 #lv-dialog .lv-page label > button,
 #lv-dialog .lv-page details > div:not(.lv-row):not(.lv-grid) > button { display:block; margin-top:12px; margin-bottom:12px; }
 #lv-dialog .lv-page textarea { display:block; }
+
+#lv-dialog .lv-mix-part { margin:14px 0; }
+#lv-dialog .lv-mix-part > p { margin:0 0 10px; overflow-wrap:anywhere; }
+#lv-dialog .lv-page .lv-mix-actions { display:grid; grid-template-columns:minmax(0,1fr) 44px 44px; gap:8px; margin-top:0; }
+#lv-dialog .lv-page .lv-mix-actions > button { width:100%; min-width:0; margin:0; }
+#lv-dialog .lv-page .lv-mix-actions > .lv-mix-arrow { padding:6px; }

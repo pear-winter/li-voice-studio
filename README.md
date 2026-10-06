@@ -1,4 +1,4 @@
-# v1.12.3 Termux 免配置鱼声连接
+# v1.12.4 多角色混合接口
 
 - MiniMax 与鱼声接口默认折叠，MiniMax 排在鱼声上面。
 - 导入导出放在配置页最后。导出可选音色（含分组、排序）、已存储接口、录音（含收藏状态）、外观与配音设置；至少选择一项。Key 默认不导出，需单独勾选。
@@ -149,3 +149,8 @@ CHROMIUM_PATH=/path/to/chromium WORKBENCH_PATH=/path/to/workbench.js node tests/
 ### 1.12.3 Termux 免配置鱼声连接（仅扩展）
 更新扩展后刷新页面，鱼声「自动」使用酒馆已存在的自定义 API 通道 /api/backends/chat-completions/generate。无需开启 CORS proxy、修改 config.yaml 或安装服务端插件。该请求传入独立参数，不修改聊天 API 配置和已有密钥，不自动重试付费生成。浏览器直连和原生 App 路径保留。
 适配说明：利用 custom_include_headers/body 和 custom_exclude_body 传入 Fish 参数；custom_url 的 URL fragment 防止服务器添加的 chat/completions 后缀改变 TTS 目标路径；stream 标志仅用于请求原始响应转发，Fish 请求体不包含 stream。二进制 MP3 通过帧头或 ID3 签名识别，错误 JSON 不作为音频。上游接口若更改，此适配可能需更新。脚本版本保持 1.12.2，本次只更新扩展。
+
+### 1.12.4 每段独立选择配音接口（仅扩展）
+多角色编辑器每段显示配音接口和音色两项选择，支持 MiniMax 与鱼声混合生成、试听和合成。新增/导入段默认使用首页接口，已有段保持独立选择；草稿保存每段接口，刷新恢复。预检在生成前检查所有段对应的 Key 与声线，提示具体段号。每段使用自己的接口、模型、密钥、声线与标记转换，已生成片段按包含接口的签名复用。首页接口和正文播放的选择保持独立。
+
+大配音组合器每段先显示文字，下方同一行放试听、上移、下移；试听占剩余宽度，两个箭头各 44px。
