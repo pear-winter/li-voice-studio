@@ -1,9 +1,17 @@
+# v1.12.10 ElevenLabs 认证冲突修复
+
+- ElevenLabs 自动请求改用浏览器直连，仅发送 xi-api-key，不经过会强制附加 Authorization 的酒馆聊天转发通道。既有自动设置无需重选，密钥无需重建。
+- 官方接口的 OPTIONS 实测允许 Origin、POST 和 xi-api-key/content-type 请求头；无需调整 Termux 或酒馆设置。鱼声继续使用原来的转发通道。
+- 加入实际 HTTP 请求回归验证，拒绝包含任何 Authorization（包括空值）的 ElevenLabs 请求，确保只发送一次合成请求。
+
+验证：实际 HTTP 请求、自动/直连认证、ElevenLabs 参数与音频返回、三接口混合合成、鱼声转发及相关回归通过。尚未使用用户账号实际扣费合成或在安卓设备上实测。
+
 # v1.12.9 ElevenLabs 配音接口
 
 - 配置页默认折叠的接口顺序为 MiniMax → ElevenLabs → 鱼声。
 - ElevenLabs API Key 保存到现有本地接口存储；音色页新增独立 ElevenLabs Voice ID，原 MiniMax / 鱼声 ID 不变。
 - 首页、正文播放与长按重新配音、多角色混合合成均支持 ElevenLabs；已有录音可正常复用、试听、收藏、下载与加 BGM。
-- 酒馆默认使用现有转发通道，无需修改 Termux 配置；非酒馆环境支持直连。认证使用 xi-api-key，返回 MP3。
+- ElevenLabs 使用允许跨域的官方接口直连，无需修改 Termux 配置。认证使用 xi-api-key，返回 MP3。
 - 默认模型 eleven_multilingual_v2，可选或手填其它模型。ElevenLabs 语速 0.7–1.2；v3 / v4 转换语气标签，其它模型去除语气词并转换停顿。稳定度和相似度在接口页设置；音量、音调不传给该接口。
 - 导入导出包含新接口与音色 ID，默认不导出 Key，兼容旧备份。本次只更新插件。
 
