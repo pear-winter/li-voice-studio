@@ -1,6 +1,6 @@
 function initLiVoice() {
 'use strict';
-const W=window,D=W.document,NS='__liliMiniVoiceV1',STORE='lili-minimax-voice-v1',VERSION='1.12.11';
+const W=window,D=W.document,NS='__liliMiniVoiceV1',STORE='lili-minimax-voice-v1',VERSION='1.12.12';
 W[NS]?.destroy();
 const listeners=[],timers=new Set(),tasks=new Set();
 let linePlayerOwner=null;
@@ -99,6 +99,25 @@ for(const [value,label] of speechTags){const option=node('option',label);option.
 function renderPerformance(){const voice=currentVoice();$('readSpeed').value=voice.speed;$('emotion').value=voice.emotion||'';}
 function updatePerformance(){const speed=Number($('readSpeed').value),emotion=$('emotion').value;if(!$('readSpeed').value||!Number.isFinite(speed)||speed<.5||speed>2)throw Error('语速请填写 0.5 到 2 倍。');const voice=currentVoice(),previous={...voice};voice.speed=speed;voice.emotion=emotion;if(!store()){Object.assign(voice,previous);throw Error('语气与语速未能保存。');}if(editingVoiceId===voice.id)$('speed').value=speed;return voice;}
 for(const id of ['emotion','readSpeed'])on($(id),'change',()=>{try{updatePerformance();status('语气与语速已保存到当前音色。');}catch(error){status(error.message);}});
+function extractQuotedLines(source){
+ const pairs={'“':'”','‘':'’','「':'」','『':'』','"':'"'},stack=[],lines=[];let start=-1;
+ for(let i=0;i<source.length;i++){
+  const ch=source[i];let slashes=0;for(let j=i-1;j>=0&&source[j]==='\\';j--)slashes++;if(slashes%2)continue;
+  if(stack.length&&ch===stack[stack.length-1]){stack.pop();if(!stack.length){const text=source.slice(start,i).replace(/\s+/g,' ').trim();if(text)lines.push(text);}continue;}
+  if(pairs[ch]){if(!stack.length)start=i+1;stack.push(pairs[ch]);}
+ }
+ if(stack.length)throw Error('有引号未闭合，原文已保留。请补齐引号后再清理。');
+ return lines;
+}
+function addQuoteCleanup(input,id){
+ const row=node('div',null,'lv-row'),clean=node('button','清除非引用文本'),undo=node('button','撤销清理');clean.type=undo.type='button';clean.dataset.id=id;undo.dataset.id=id+'Undo';undo.hidden=true;let previous=null,result=null;
+ row.append(clean,undo);input.parentElement.after(row);
+ on(input,'input',()=>{if(input.value!==result){previous=null;result=null;undo.hidden=true;}});
+ on(clean,'click',()=>{try{const lines=extractQuotedLines(input.value);if(!lines.length)return status('没有找到完整的引用内容，原文已保留。');const next=lines.join('\n');if(next===input.value)return status('已经是按行整理的引用内容。');const before=input.value;input.value=next;input.dispatchEvent(new W.Event('input',{bubbles:true}));previous=before;result=next;undo.hidden=false;status('已保留 '+lines.length+' 段引用，每段一行。');}catch(e){status(e.message);}});
+ on(undo,'click',()=>{if(previous===null||input.value!==result)return;input.value=previous;previous=null;result=null;undo.hidden=true;input.dispatchEvent(new W.Event('input',{bubbles:true}));status('已恢复清理前的文字。');});
+}
+addQuoteCleanup($('text'),'cleanQuotes');
+
 let textCursor=null;
 for(const event of ['select','keyup','pointerup','blur','input'])on($('text'),event,()=>{textCursor={value:$('text').value,position:$('text').selectionEnd};});
 function insertSpeechToken(token){const input=$('text'),position=textCursor?.value===input.value?textCursor.position:input.selectionEnd;if(input.value.length+token.length>9999)return status('加入标记后会超过 9999 字符。');input.setRangeText(token,position,position,'end');textCursor={value:input.value,position:input.selectionEnd};input.dispatchEvent(new W.Event('input',{bubbles:true}));input.focus();input.setSelectionRange(textCursor.position,textCursor.position);status('已插入 '+token);}
@@ -384,6 +403,7 @@ const historyTools=node('div',null,'lv-row');historyTools.innerHTML='<button typ
 const mixer=node('section',null,'lv-record-mixer');mixer.dataset.id='recordMixer';mixer.hidden=true;mixer.innerHTML='<label>大配音名称<input data-id="mixTitle" value="我的大配音"></label><div data-id="mixOrder"></div><div class="lv-row"><button type="button" data-id="mixMake">合成并保存</button><button type="button" data-id="mixClose">关闭组合器</button></div><p data-id="mixStatus" role="status"></p>';$('historyList').before(mixer);
 const mixOptions=node('details');mixOptions.open=true;mixOptions.innerHTML=`<summary>合成设置 · 间隔与 BGM</summary><label>片段间隔（0–10 秒）<input data-id="mixGap" type="number" min="0" max="10" step="0.1" value="0"></label><label>添加 BGM（可选，本地音频）<input data-id="mixBgm" type="file" accept="audio/*"></label><label>BGM 音量<input data-id="mixVolume" type="range" min="0" max="100" value="18"></label><p data-id="mixBgmStatus">没有添加 BGM。背景音乐会循环铺满，并淡入淡出。</p><button type="button" data-id="clearBgm">清除 BGM</button>`;batchBox.after(mixOptions);
 const importBox=node('label');importBox.innerHTML='整段文字<textarea data-id="batchImport" placeholder="粘贴长段文字，支持 &lt;vo=角色&gt; 台词标记；未标记内容按换行和句号分段"></textarea><button type="button" data-id="importSegments">拆分为语段</button>';batchBox.querySelector('[data-id=batchLines]').before(importBox);
+addQuoteCleanup($('batchImport'),'batchCleanQuotes');
 const sendBatch=node('button','送入多角色配音');sendBatch.type='button';$('text').parentElement.after(sendBatch);on(sendBatch,'click',()=>{$('batchImport').value=$('text').value;tab('batch');});
 on($('importSegments'),'click',()=>{if(batchBusy)return;const text=$('batchImport').value;const chunks=[];let end=0;for(const m of text.matchAll(/<vo=([^>\n]{1,30})>([\s\S]*?)<\/vo>/g)){if(text.slice(end,m.index).trim())chunks.push({text:text.slice(end,m.index).trim()});chunks.push({who:m[1].trim(),text:m[2].trim()});end=m.index+m[0].length;}if(end){if(text.slice(end).trim())chunks.push({text:text.slice(end).trim()});}else chunks.push(...text.split(/\n+|(?<=[。！？!?])\s*/u).filter(t=>t.trim()).map(text=>({text:text.trim()})));if(!chunks.length||chunks.length>40||chunks.some(r=>r.text.length>9999))return status('请拆成 1–40 段，每段最多 9999 字。');if(batchDraft.some(r=>r.text.trim())&&!W.confirm('替换当前多角色草稿？'))return;batchDraft=chunks.map(r=>({id:uuid(),text:r.text,provider:config.provider,voice:(config.voices.find(v=>v.name===r.who)||config.voices.find(v=>voiceRole(v)===r.who)||config.voices.find(v=>v.name.split(/[_＿]/)[0]===r.who))?.id||config.selected}));saveBatchDraft();drawBatch();status('已拆分，每段都可以单独选音色。');});
 function saveBatchDraft(){try{W.localStorage.setItem('lili-voice-script-v1',JSON.stringify(batchDraft));}catch{status('台词草稿未能保存，请导出备份。');}}

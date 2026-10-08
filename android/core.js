@@ -74,6 +74,25 @@ for(const [value,label] of speechTags){const option=node('option',label);option.
 function renderPerformance(){const voice=currentVoice();$('readSpeed').value=voice.speed;$('emotion').value=voice.emotion||'';}
 function updatePerformance(){const speed=Number($('readSpeed').value),emotion=$('emotion').value;if(!$('readSpeed').value||!Number.isFinite(speed)||speed<.5||speed>2)throw Error('语速请填写 0.5 到 2 倍。');const voice=currentVoice(),previous={...voice};voice.speed=speed;voice.emotion=emotion;if(!store()){Object.assign(voice,previous);throw Error('语气与语速未能保存。');}if(editingVoiceId===voice.id)$('speed').value=speed;return voice;}
 for(const id of ['emotion','readSpeed'])on($(id),'change',()=>{try{updatePerformance();status('语气与语速已保存到当前音色。');}catch(error){status(error.message);}});
+function extractQuotedLines(source){
+ const pairs={'“':'”','‘':'’','「':'」','『':'』','"':'"'},stack=[],lines=[];let start=-1;
+ for(let i=0;i<source.length;i++){
+  const ch=source[i];let slashes=0;for(let j=i-1;j>=0&&source[j]==='\\';j--)slashes++;if(slashes%2)continue;
+  if(stack.length&&ch===stack[stack.length-1]){stack.pop();if(!stack.length){const text=source.slice(start,i).replace(/\s+/g,' ').trim();if(text)lines.push(text);}continue;}
+  if(pairs[ch]){if(!stack.length)start=i+1;stack.push(pairs[ch]);}
+ }
+ if(stack.length)throw Error('有引号未闭合，原文已保留。请补齐引号后再清理。');
+ return lines;
+}
+function addQuoteCleanup(input,id){
+ const row=node('div',null,'lv-row'),clean=node('button','清除非引用文本'),undo=node('button','撤销清理');clean.type=undo.type='button';clean.dataset.id=id;undo.dataset.id=id+'Undo';undo.hidden=true;let previous=null,result=null;
+ row.append(clean,undo);input.parentElement.after(row);
+ on(input,'input',()=>{if(input.value!==result){previous=null;result=null;undo.hidden=true;}});
+ on(clean,'click',()=>{try{const lines=extractQuotedLines(input.value);if(!lines.length)return status('没有找到完整的引用内容，原文已保留。');const next=lines.join('\n');if(next===input.value)return status('已经是按行整理的引用内容。');const before=input.value;input.value=next;input.dispatchEvent(new W.Event('input',{bubbles:true}));previous=before;result=next;undo.hidden=false;status('已保留 '+lines.length+' 段引用，每段一行。');}catch(e){status(e.message);}});
+ on(undo,'click',()=>{if(previous===null||input.value!==result)return;input.value=previous;previous=null;result=null;undo.hidden=true;input.dispatchEvent(new W.Event('input',{bubbles:true}));status('已恢复清理前的文字。');});
+}
+addQuoteCleanup($('text'),'cleanQuotes');
+
 let textCursor=null;
 for(const event of ['select','keyup','pointerup','blur','input'])on($('text'),event,()=>{textCursor={value:$('text').value,position:$('text').selectionEnd};});
 function insertSpeechToken(token){const input=$('text'),position=textCursor?.value===input.value?textCursor.position:input.selectionEnd;if(input.value.length+token.length>9999)return status('加入标记后会超过 9999 字符。');input.setRangeText(token,position,position,'end');textCursor={value:input.value,position:input.selectionEnd};input.dispatchEvent(new W.Event('input',{bubbles:true}));input.focus();input.setSelectionRange(textCursor.position,textCursor.position);status('已插入 '+token);}
